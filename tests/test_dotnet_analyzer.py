@@ -762,3 +762,17 @@ def test_routes_carry_declared_auth_state(tmp_path: Path) -> None:
     signup = by_route["POST /public/signup"]
     assert signup.auth == "anonymous" and signup.guards == []
     assert {r.auth for r in result.routes} <= {"required", "anonymous", "unknown"}
+
+
+# ---------- SDK v2 extraction protocol declaration (AR082 / AC-403) ----------
+
+
+def test_declares_extraction_protocol_2_0() -> None:
+    from attackmap.sdk.analyzer_contracts import declared_extraction_protocol
+
+    analyzer = DotnetAnalyzer()
+    # Explicit declaration: pinned on the class, not inherited from the SDK default.
+    assert analyzer.EXTRACTION_PROTOCOL_VERSION == "2.0"
+    assert declared_extraction_protocol(analyzer) == "2.0"
+    # Compat: protocol 1.0 payloads still load via core's v1 adapter
+    # (attackmap.extraction.adapters); declaring "2.0" removes no v1 support.

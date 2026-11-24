@@ -186,7 +186,18 @@ def _extract_csproj_meta(csproj_path: Path, root: Path | None = None) -> tuple[s
     return (rn.group(1).strip() if rn else None, an.group(1).strip() if an else None)
 
 
+# SDK v2 (AR082 / AC-403): explicit extraction protocol declaration. Core's
+# declared_extraction_protocol() reads the class attribute below; pinning "2.0"
+# makes the declaration explicit instead of inherited from the SDK default.
+# Plugins written against protocol 1.0 keep loading via core's v1 adapter
+# (attackmap.extraction.adapters) — this declaration removes nothing.
+EXTRACTION_PROTOCOL_VERSION = "2.0"
+
+
 class DotnetAnalyzer:
+    # Read by core's declared_extraction_protocol(); see the module constant.
+    EXTRACTION_PROTOCOL_VERSION = EXTRACTION_PROTOCOL_VERSION
+
     metadata = AnalyzerMetadata(
         name="dotnet",
         display_name="C# / .NET Analyzer",
@@ -521,4 +532,4 @@ class DotnetAnalyzer:
         result.service_hints.append(ServiceHint(hint=hint, file=file))
 
 
-__all__ = ["DotnetAnalyzer"]
+__all__ = ["DotnetAnalyzer", "EXTRACTION_PROTOCOL_VERSION"]
